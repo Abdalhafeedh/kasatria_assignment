@@ -20,18 +20,27 @@ async function fetchSheetData(accessToken) {
 
     const sheets = google.sheets({ version: 'v4', auth });
 
-    // Log environment variables for debugging (values will appear in Vercel logs)
-    console.log('GOOGLE_SHEET_ID:', process.env.GOOGLE_SHEET_ID);
-    console.log('GOOGLE_SHEET_RANGE:', process.env.GOOGLE_SHEET_RANGE);
+    // Use default range if not specified or use simple range
+    const sheetId = process.env.GOOGLE_SHEET_ID;
+    let range = process.env.GOOGLE_SHEET_RANGE || 'A1:F201';
+
+    // If range doesn't include sheet name, that's fine - it uses the first sheet
+    console.log('Fetching from Sheet ID:', sheetId);
+    console.log('Using range:', range);
 
     const response = await sheets.spreadsheets.values.get({
-        spreadsheetId: process.env.GOOGLE_SHEET_ID,
-        range: process.env.GOOGLE_SHEET_RANGE,
+        spreadsheetId: sheetId,
+        range: range,
     });
 
-    console.log('Raw response rows:', response.data.values?.length || 0);
+    const rows = response.data.values || [];
+    console.log('Rows received:', rows.length);
 
-    return rowsToObjects(response.data.values || []);
+    if (rows.length > 0) {
+        console.log('First row (headers):', rows[0]);
+    }
+
+    return rowsToObjects(rows);
 }
 
 export default async function handler(req, res) {
@@ -44,50 +53,56 @@ export default async function handler(req, res) {
         return res.status(200).end();
     }
 
+    // Check environment variables first
+    if (!process.env.GOOGLE_SHEET_ID) {
+        return res.status(500).json({
+            success: false,
+            error: 'Configuration Error',
+            message: 'GOOGLE_SHEET_ID environment variable is not set in Vercel'
+        });
+    }
+
     try {
         const auth = req.headers.authorization;
         if (!auth?.startsWith('Bearer ')) {
             return res.status(401).json({
+                success: false,
                 error: 'Unauthorized',
-                message: 'Missing token'
-            });
-        }
-
-        // Check if environment variables are set
-        if (!process.env.GOOGLE_SHEET_ID) {
-            return res.status(500).json({
-                error: 'Configuration Error',
-                message: 'GOOGLE_SHEET_ID is not configured'
-            });
-        }
-
-        if (!process.env.GOOGLE_SHEET_RANGE) {
-            return res.status(500).json({
-                error: 'Configuration Error',
-                message: 'GOOGLE_SHEET_RANGE is not configured'
+                message: 'Missing authorization token. Please sign in again.'
             });
         }
 
         const data = await fetchSheetData(auth.substring(7));
-        res.status(200).json({
+
+        return res.status(200).json({
             success: true,
             count: data.length,
-            data: data.slice(0, 200),
-            debug: {
-                sheetId: process.env.GOOGLE_SHEET_ID?.substring(0, 10) + '...',
-                range: process.env.GOOGLE_SHEET_RANGE
-            }
+            data: data.slice(0, 200)
         });
-    } catch (error) {
-        console.error('Sheet error:', error.message);
-        console.error('Full error:', JSON.stringify(error, null, 2));
 
-        res.status(500).json({
-            error: 'Error',
-            message: error.message,
-            debug: {
-                sheetId: process.env.GOOGLE_SHEET_ID?.substring(0, 10) + '...',
-                range: process.env.GOOGLE_SHEET_RANGE
+    } catch (error) {
+        console.error('Sheet API Error:', error);
+
+        // Provide helpful error messages
+        let userMessage = error.message;
+
+        if (error.message?.includes('Unable to parse range')) {
+            userMessage = `Invalid sheet range: ${process.env.GOOGLE_SHEET_RANGE}. Try using just "A1:F201" without sheet name.`;
+        } else if (error.message?.includes('not found')) {
+            userMessage = `Sheet not found. Check if GOOGLE_SHEET_ID is correct: ${process.env.GOOGLE_SHEET_ID?.substring(0, 15)}...`;
+        } else if (error.code === 403 || error.message?.includes('forbidden')) {
+            userMessage = 'Access denied. Make sure the Google Sheet is shared with your account or set to "Anyone with the link".';
+        } else if (error.code === 401) {
+            userMessage = 'Authentication failed. Please sign out and sign in again.';
+        }
+
+        return res.status(500).json({
+            success: false,
+            error: 'Sheet API Error',
+            message: userMessage,
+            details: {
+                sheetId: process.env.GOOGLE_SHEET_ID?.substring(0, 15) + '...',
+                range: process.env.GOOGLE_SHEET_RANGE || 'A1:F201 (default)'
             }
         });
     }
