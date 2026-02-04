@@ -3,44 +3,50 @@
 import { google } from 'googleapis';
 
 function rowsToObjects(rows) {
-    if (!rows.length) return [];
+    if (!rows || !rows.length) return { data: [], rawRowCount: 0 };
+
     const headers = rows[0].map(h => String(h || "").trim());
-    return rows.slice(1)
-        .filter(r => r.some(cell => String(cell || "").trim()))
+    const dataRows = rows.slice(1)
+        .filter(r => r && r.some(cell => String(cell || "").trim()))
         .map(r => {
             const obj = {};
             headers.forEach((h, i) => obj[h] = r[i] ?? "");
             return obj;
         });
+
+    return {
+        data: dataRows,
+        rawRowCount: rows.length,
+        headers: headers
+    };
 }
 
-async function fetchSheetData(accessToken) {
+async function fetchSheetData(accessToken, sheetId, range) {
     const auth = new google.auth.OAuth2();
     auth.setCredentials({ access_token: accessToken });
 
     const sheets = google.sheets({ version: 'v4', auth });
 
-    // Use default range if not specified or use simple range
-    const sheetId = process.env.GOOGLE_SHEET_ID;
-    let range = process.env.GOOGLE_SHEET_RANGE || 'A1:F201';
-
-    // If range doesn't include sheet name, that's fine - it uses the first sheet
-    console.log('Fetching from Sheet ID:', sheetId);
-    console.log('Using range:', range);
+    console.log('=== SHEET FETCH DEBUG ===');
+    console.log('Sheet ID:', sheetId);
+    console.log('Range:', range);
 
     const response = await sheets.spreadsheets.values.get({
         spreadsheetId: sheetId,
         range: range,
     });
 
-    const rows = response.data.values || [];
-    console.log('Rows received:', rows.length);
+    console.log('API Response status:', response.status);
+    console.log('Values received:', response.data.values?.length || 0, 'rows');
 
-    if (rows.length > 0) {
-        console.log('First row (headers):', rows[0]);
+    if (response.data.values && response.data.values.length > 0) {
+        console.log('First row:', JSON.stringify(response.data.values[0]));
+        if (response.data.values.length > 1) {
+            console.log('Second row:', JSON.stringify(response.data.values[1]));
+        }
     }
 
-    return rowsToObjects(rows);
+    return response.data.values || [];
 }
 
 export default async function handler(req, res) {
@@ -53,12 +59,16 @@ export default async function handler(req, res) {
         return res.status(200).end();
     }
 
-    // Check environment variables first
-    if (!process.env.GOOGLE_SHEET_ID) {
+    const sheetId = process.env.GOOGLE_SHEET_ID;
+    // Try without sheet name if the current range doesn't work
+    let range = process.env.GOOGLE_SHEET_RANGE || 'A1:F201';
+
+    // Check environment variables
+    if (!sheetId) {
         return res.status(500).json({
             success: false,
             error: 'Configuration Error',
-            message: 'GOOGLE_SHEET_ID environment variable is not set in Vercel'
+            message: 'GOOGLE_SHEET_ID is not set'
         });
     }
 
@@ -68,41 +78,56 @@ export default async function handler(req, res) {
             return res.status(401).json({
                 success: false,
                 error: 'Unauthorized',
-                message: 'Missing authorization token. Please sign in again.'
+                message: 'Missing authorization token'
             });
         }
 
-        const data = await fetchSheetData(auth.substring(7));
+        const token = auth.substring(7);
+        let rows;
+
+        try {
+            // First attempt with configured range
+            rows = await fetchSheetData(token, sheetId, range);
+        } catch (rangeError) {
+            console.log('First attempt failed:', rangeError.message);
+            // If Sheet1! prefix fails, try without it
+            if (range.includes('!')) {
+                const simpleRange = range.split('!')[1] || 'A1:F201';
+                console.log('Retrying with simple range:', simpleRange);
+                rows = await fetchSheetData(token, sheetId, simpleRange);
+            } else {
+                throw rangeError;
+            }
+        }
+
+        const result = rowsToObjects(rows);
 
         return res.status(200).json({
             success: true,
-            count: data.length,
-            data: data.slice(0, 200)
+            count: result.data.length,
+            data: result.data.slice(0, 200),
+            debug: {
+                rawRowsReceived: result.rawRowCount,
+                headers: result.headers,
+                configuredRange: range,
+                sheetIdPrefix: sheetId.substring(0, 10)
+            }
         });
 
     } catch (error) {
-        console.error('Sheet API Error:', error);
-
-        // Provide helpful error messages
-        let userMessage = error.message;
-
-        if (error.message?.includes('Unable to parse range')) {
-            userMessage = `Invalid sheet range: ${process.env.GOOGLE_SHEET_RANGE}. Try using just "A1:F201" without sheet name.`;
-        } else if (error.message?.includes('not found')) {
-            userMessage = `Sheet not found. Check if GOOGLE_SHEET_ID is correct: ${process.env.GOOGLE_SHEET_ID?.substring(0, 15)}...`;
-        } else if (error.code === 403 || error.message?.includes('forbidden')) {
-            userMessage = 'Access denied. Make sure the Google Sheet is shared with your account or set to "Anyone with the link".';
-        } else if (error.code === 401) {
-            userMessage = 'Authentication failed. Please sign out and sign in again.';
-        }
+        console.error('=== SHEET API ERROR ===');
+        console.error('Error message:', error.message);
+        console.error('Error code:', error.code);
+        console.error('Full error:', JSON.stringify(error, Object.getOwnPropertyNames(error)));
 
         return res.status(500).json({
             success: false,
             error: 'Sheet API Error',
-            message: userMessage,
-            details: {
-                sheetId: process.env.GOOGLE_SHEET_ID?.substring(0, 15) + '...',
-                range: process.env.GOOGLE_SHEET_RANGE || 'A1:F201 (default)'
+            message: error.message,
+            code: error.code,
+            debug: {
+                range: range,
+                sheetIdPrefix: sheetId?.substring(0, 10)
             }
         });
     }

@@ -22,6 +22,10 @@ export async function fetchSheetData() {
     const token = getAccessToken();
     if (!token) throw new Error("Not authenticated");
     const res = await request('/sheets/data', { headers: { Authorization: `Bearer ${token}` } });
+    console.log('API Response:', JSON.stringify(res, null, 2));
+    if (!res.success) {
+        throw new Error(res.message || 'Failed to fetch data');
+    }
     return res.data || [];
 }
 
