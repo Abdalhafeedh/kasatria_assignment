@@ -32,9 +32,44 @@
 <body>
     <!-- LOGIN SCREEN -->
     <div id="loginScreen">
+        <!-- Floating Particles -->
+        <div class="particles">
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+        </div>
+
         <div class="loginCard">
+            <!-- 3D Cube Icon -->
+            <div class="login-icon">
+                <svg width="60" height="60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="url(#grad1)" stroke-width="1.5" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                    <path d="M2 17L12 22L22 17" stroke="url(#grad2)" stroke-width="1.5" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                    <path d="M2 12L12 17L22 12" stroke="url(#grad3)" stroke-width="1.5" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                    <defs>
+                        <linearGradient id="grad1" x1="2" y1="7" x2="22" y2="7">
+                            <stop stop-color="#a78bfa" />
+                            <stop offset="1" stop-color="#667eea" />
+                        </linearGradient>
+                        <linearGradient id="grad2" x1="2" y1="17" x2="22" y2="17">
+                            <stop stop-color="#667eea" />
+                            <stop offset="1" stop-color="#764ba2" />
+                        </linearGradient>
+                        <linearGradient id="grad3" x1="2" y1="12" x2="22" y2="12">
+                            <stop stop-color="#c4b5fd" />
+                            <stop offset="1" stop-color="#a78bfa" />
+                        </linearGradient>
+                    </defs>
+                </svg>
+            </div>
+
             <h1>Welcome Back</h1>
-            <p class="subtitle">Sign in to access 3D Data Visualization</p>
+            <p class="subtitle">Sign in to explore 3D Data Visualization</p>
 
             <button id="loginBtn" class="googleBtn" type="button">
                 <svg width="20" height="20" viewBox="0 0 48 48">
@@ -47,10 +82,12 @@
                     <path fill="#fff"
                         d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
                 </svg>
-                <span>Sign in with Google</span>
+                <span>Continue with Google</span>
             </button>
 
             <pre id="loginError" class="error hidden"></pre>
+
+            <p class="login-footer">Powered by Three.js & Google Sheets</p>
         </div>
     </div>
 
@@ -80,17 +117,10 @@
         <!-- Net Worth Legend -->
         <div id="legend" class="legend">
             <div class="legend-title">Net Worth</div>
-            <div class="legend-item">
-                <span class="legend-color legend-low"></span>
-                <span>&lt; $100K</span>
-            </div>
-            <div class="legend-item">
-                <span class="legend-color legend-medium"></span>
-                <span>&gt; $100K</span>
-            </div>
-            <div class="legend-item">
-                <span class="legend-color legend-high"></span>
-                <span>&gt; $200K</span>
+            <div class="legend-bar-container">
+                <span class="legend-label">LOW</span>
+                <div class="legend-gradient"></div>
+                <span class="legend-label">High</span>
             </div>
         </div>
 
