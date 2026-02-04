@@ -168,55 +168,46 @@ button.danger:hover {
 
 .legend {
     position: absolute;
-    bottom: 30px;
-    right: 0;
-    left: 0;
-    margin: auto;
-    width: 300px;
-    background: rgba(0, 0, 0, 0.85);
+    bottom: 80px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.8);
     border: 1px solid rgba(127, 255, 255, 0.25);
-    padding: 10px 20px;
-    border-radius: 50px;
+    padding: 10px;
+    border-radius: 4px;
     pointer-events: none;
-    backdrop-filter: blur(5px);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 5px;
 }
 
-.legend-title {
-    color: #fff;
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 2px;
-}
-
-.legend-bar-container {
+.legend-item {
     display: flex;
     align-items: center;
-    width: 100%;
-    gap: 10px;
+    margin-bottom: 5px;
+    font-size: 11px;
+    color: var(--color-base);
 }
 
-.legend-label {
-    font-size: 12px;
-    font-weight: bold;
-    color: #fff;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
-}
-
-.legend-gradient {
-    flex-grow: 1;
+.legend-color {
+    width: 12px;
     height: 12px;
-    border-radius: 6px;
-    background: linear-gradient(to right,
-            var(--color-low) 0%,
-            var(--color-med) 50%,
-            var(--color-high) 100%);
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
-    position: relative;
+    margin-right: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.legend-low {
+    background: var(--color-low);
+    border-color: var(--color-low);
+    box-shadow: 0 0 5px var(--color-low);
+}
+
+.legend-medium {
+    background: var(--color-med);
+    border-color: var(--color-med);
+    box-shadow: 0 0 5px var(--color-med);
+}
+
+.legend-high {
+    background: var(--color-high);
+    border-color: var(--color-high);
+    box-shadow: 0 0 5px var(--color-high);
 }
 
 #loginScreen {
