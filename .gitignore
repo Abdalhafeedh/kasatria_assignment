@@ -3,8 +3,8 @@
 .env.local
 .env.*.local
 
-# Old config files (deprecated)
-config.js
+# Old config files (deprecated, root level only)
+/config.js
 
 # Dependencies
 node_modules/
