@@ -3,12 +3,7 @@
     "builds": [
         {
             "src": "api/**/*.js",
-            "use": "@vercel/node",
-            "config": {
-                "includeFiles": [
-                    "api/**"
-                ]
-            }
+            "use": "@vercel/node"
         },
         {
             "src": "public/**",
@@ -17,24 +12,15 @@
     ],
     "routes": [
         {
-            "src": "/api/health",
-            "dest": "/api/health.js"
+            "handle": "filesystem"
         },
         {
-            "src": "/api/config",
-            "dest": "/api/config.js"
-        },
-        {
-            "src": "/api/sheets/data",
-            "dest": "/api/sheets/data.js"
-        },
-        {
-            "src": "/(.*\\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot))",
-            "dest": "/public/$1"
+            "src": "/api/(.*)",
+            "dest": "/api/$1"
         },
         {
             "src": "/(.*)",
-            "dest": "/public/index.html"
+            "dest": "/public/$1"
         }
     ]
 }
