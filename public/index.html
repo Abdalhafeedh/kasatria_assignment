@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description"
+        content="Kasatria 3D Data Visualization - Interactive periodic table style display using Three.js and Google Sheets" />
+
+    <title>Kasatria – 3D Data Visualization</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>" />
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="./styles.css" />
+
+    <!-- Import Map for ES Modules (fixes "three" module resolution) -->
+    <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+
+    <!-- Google Identity Services -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+
+<body>
+    <!-- LOGIN SCREEN (Image A style) -->
+    <div id="loginScreen">
+        <div class="loginCard">
+            <h1>Welcome Back</h1>
+            <p class="muted">Lorem ipsum dolor sit amet, consectetur adipiscing elit</p>
+
+            <button id="loginBtn" class="googleBtn" type="button">
+                <span class="gIcon">G</span>
+                <span>Sign in with Google</span>
+            </button>
+
+            <div class="hint">
+                <div><strong>Note:</strong> This app requires access to your Google Sheet data.</div>
+                <div class="small">By signing in, you agree to share your email and profile information.</div>
+            </div>
+
+            <pre id="loginError" class="error hidden"></pre>
+        </div>
+    </div>
+
+    <!-- MAIN APPLICATION -->
+    <div id="app" class="hidden">
+        <!-- Top Navigation Bar -->
+        <header id="topbar">
+            <div class="left">
+                <span class="brand">Kasatria</span>
+                <span id="userLabel" class="userLabel"></span>
+            </div>
+
+            <nav class="right">
+                <button class="btn" id="btnTable">TABLE</button>
+                <button class="btn" id="btnSphere">SPHERE</button>
+                <button class="btn" id="btnHelix">HELIX</button>
+                <button class="btn" id="btnGrid">GRID</button>
+                <button class="btn danger" id="btnSignOut">SIGN OUT</button>
+            </nav>
+        </header>
+
+        <!-- Three.js Container -->
+        <main id="container"></main>
+
+        <!-- Net Worth Legend -->
+        <div id="legend" class="legend">
+            <div class="legend-title">Net Worth</div>
+            <div class="legend-item">
+                <span class="legend-color legend-low"></span>
+                <span>&lt; $100K</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color legend-medium"></span>
+                <span>&gt; $100K</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color legend-high"></span>
+                <span>&gt; $200K</span>
+            </div>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div id="loading" class="loading hidden">
+            <div class="loadingContent">
+                <div class="spinner"></div>
+                <p>Loading data from Google Sheets...</p>
+            </div>
+        </div>
+
+        <!-- Toast Notifications -->
+        <div id="toast" class="toast hidden"></div>
+    </div>
+
+    <!-- Application Entry Point -->
+    <script type="module" src="./src/main.js"></script>
+</body>
+
+</html>
