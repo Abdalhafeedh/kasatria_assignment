@@ -1,15 +1,22 @@
 // Main Application - Kasatria 3D Data Visualization
 
-import { MAX_TILES, ANIMATION } from './constants.js';
-import {
-    initUI, showLoginError, hideLoginError, setLoading,
-    showToast, showApp, setUserLabel, getContainer, setupLayoutButtons, setupLoginButton
-} from './ui.js';
+import { checkHealth, fetchConfig, fetchSheetData } from './api.js';
 import { initGoogleAuth, requestAccessToken, signOut, waitForGoogleScript } from './auth.js';
-import { fetchSheetData, fetchConfig, checkHealth } from './api.js';
-import { createTiles } from './tiles.js';
+import { ANIMATION, MAX_TILES } from './constants.js';
 import { generateAllTargets } from './layouts.js';
-import { initScene, addMultipleToScene, startAnimation, transformToLayout, focusOnPosition } from './scene.js';
+import { addMultipleToScene, focusOnPosition, initScene, startAnimation, transformToLayout } from './scene.js';
+import { createTiles } from './tiles.js';
+import {
+    getContainer,
+    hideLoginError,
+    initUI,
+    setLoading,
+    setupLayoutButtons, setupLoginButton,
+    setUserLabel,
+    showApp,
+    showLoginError,
+    showToast
+} from './ui.js';
 
 let tileObjects = [];
 let layoutTargets = {};
@@ -50,6 +57,7 @@ async function startApp() {
             onSphere: () => transformToLayout(tileObjects, layoutTargets.sphere, ANIMATION.DEFAULT_DURATION),
             onHelix: () => transformToLayout(tileObjects, layoutTargets.helix, ANIMATION.DEFAULT_DURATION),
             onGrid: () => transformToLayout(tileObjects, layoutTargets.grid, ANIMATION.DEFAULT_DURATION),
+            onPyramid: () => transformToLayout(tileObjects, layoutTargets.pyramid, ANIMATION.DEFAULT_DURATION),
             onSignOut: () => signOut(() => window.location.reload()),
         });
 

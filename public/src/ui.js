@@ -17,6 +17,7 @@ export function initUI() {
     el.btnSphere = document.getElementById("btnSphere");
     el.btnHelix = document.getElementById("btnHelix");
     el.btnGrid = document.getElementById("btnGrid");
+    el.btnPyramid = document.getElementById("btnPyramid");
     el.btnSignOut = document.getElementById("btnSignOut");
 }
 
@@ -61,6 +62,7 @@ export function setupLayoutButtons(cb) {
     el.btnSphere?.addEventListener("click", cb.onSphere);
     el.btnHelix?.addEventListener("click", cb.onHelix);
     el.btnGrid?.addEventListener("click", cb.onGrid);
+    el.btnPyramid?.addEventListener("click", cb.onPyramid);
     el.btnSignOut?.addEventListener("click", cb.onSignOut);
 }
 
